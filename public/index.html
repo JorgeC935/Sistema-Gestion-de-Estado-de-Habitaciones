@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Estado de Habitaciones</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Encabezado Principal -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-brand">
+        <span class="hotel-icon">🏨</span>
+        <h1 class="hotel-title">Estado de Habitaciones</h1>
+      </div>
+      <div class="header-status">
+        <div class="header-clock" id="headerClock">--:--</div>
+        <div class="connection-pill disconnected" id="connectionStatus">
+          <span class="status-dot"></span>
+          <span class="status-text">Conectando...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Cuadrícula de Habitaciones -->
+  <main class="main-container">
+    <div class="rooms-grid" id="roomsGrid">
+      <!-- Generado dinámicamente -->
+    </div>
+  </main>
+
+  <!-- Modal Selector de Hora de Salida (Estilo Reloj Digital 24h) -->
+  <div class="modal-overlay" id="timeModal" style="display: none;">
+    <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h2 id="modalTitle">Habitación 1 — Hora de Salida</h2>
+        <button type="button" class="modal-close" id="btnCancelModal" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Display Digital Grande -->
+        <div class="digital-display">
+          <div class="digital-part active" id="dispHoras">12</div>
+          <span class="digital-colon">:</span>
+          <div class="digital-part" id="dispMinutos">00</div>
+        </div>
+        <p class="selector-instructions">Seleccione la hora de salida (formato 24h):</p>
+
+        <!-- Selector de Horas y Minutos -->
+        <div class="time-columns">
+          <!-- Columna Horas -->
+          <div class="time-col">
+            <div class="col-title">HORA (00 - 23)</div>
+            <div class="buttons-grid hours-grid" id="hoursGrid">
+              <!-- 00 a 23 -->
+            </div>
+          </div>
+
+          <!-- Columna Minutos -->
+          <div class="time-col">
+            <div class="col-title">MINUTOS (00 - 55)</div>
+            <div class="buttons-grid minutes-grid" id="minutesGrid">
+              <!-- 00 a 55 en pasos de 5 min -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal btn-cancel" id="btnCancelAction">Cancelar</button>
+        <button type="button" class="btn-modal btn-confirm" id="btnConfirmOcupada">Confirmar Ocupada</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.IO servido localmente por Express (sin necesidad de internet) -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,688 @@
+/* Reseteo y variables globales */
+:root {
+  --bg-app: #f1f5f9;
+  --bg-card: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-card: #e2e8f0;
+  
+  /* Colores de Estados */
+  --color-libre: #16a34a;
+  --color-libre-bg: #dcfce7;
+  --color-libre-border: #22c55e;
+
+  --color-ocupada: #dc2626;
+  --color-ocupada-bg: #fee2e2;
+  --color-ocupada-border: #ef4444;
+
+  --color-sucia: #ca8a04;
+  --color-sucia-bg: #fef08a;
+  --color-sucia-border: #eab308;
+  --color-sucia-text: #854d0e;
+
+  --color-fuerahora: #ea580c;
+  --color-fuerahora-bg: #ffedd5;
+  --color-fuerahora-border: #f97316;
+  --color-fuerahora-text: #9a3412;
+
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --radius-card: 14px;
+  --radius-btn: 10px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ENCABEZADO */
+.app-header {
+  background-color: #ffffff;
+  border-bottom: 2px solid #e2e8f0;
+  padding: 14px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hotel-icon {
+  font-size: 1.8rem;
+}
+
+.hotel-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-clock {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #1e293b;
+  background-color: #f8fafc;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  letter-spacing: 0.05em;
+}
+
+.connection-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.connection-pill.connected {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.connection-pill.disconnected {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.connection-pill.connected .status-dot {
+  background-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+}
+
+.connection-pill.disconnected .status-dot {
+  background-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+}
+
+/* CONTENEDOR PRINCIPAL */
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+  flex: 1;
+}
+
+/* CUADRÍCULA DE HABITACIONES */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+/* TARJETA DE HABITACIÓN (FONDO BLANCO PREDOMINANTE) */
+.room-card {
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-card);
+  border-radius: var(--radius-card);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.room-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background-color: #cbd5e1;
+  transition: background-color 0.2s ease;
+}
+
+/* Variantes de Borde e Indicador según estado */
+.room-card.state-libre {
+  border-color: #86efac;
+}
+.room-card.state-libre::before {
+  background-color: var(--color-libre);
+}
+
+.room-card.state-ocupada {
+  border-color: #fca5a5;
+}
+.room-card.state-ocupada::before {
+  background-color: var(--color-ocupada);
+}
+
+.room-card.state-sucia {
+  border-color: #fde047;
+}
+.room-card.state-sucia::before {
+  background-color: var(--color-sucia-border);
+}
+
+.room-card.state-fuerahora {
+  border-color: #fdba74;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.15);
+}
+.room-card.state-fuerahora::before {
+  background-color: var(--color-fuerahora);
+}
+
+/* Encabezado de la Tarjeta */
+.room-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.room-number {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.room-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge-libre {
+  background-color: var(--color-libre-bg);
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.badge-ocupada {
+  background-color: var(--color-ocupada-bg);
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.badge-sucia {
+  background-color: var(--color-sucia-bg);
+  color: var(--color-sucia-text);
+  border: 1px solid #fde047;
+}
+
+.badge-fuerahora {
+  background-color: var(--color-fuerahora-bg);
+  color: var(--color-fuerahora-text);
+  border: 1px solid #fdba74;
+  animation: pulse-badge 2s infinite ease-in-out;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.88; transform: scale(1.03); }
+}
+
+/* Información de Hora de Salida */
+.room-info {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.room-info:hover {
+  background-color: #f1f5f9;
+}
+
+.info-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.info-time {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+
+.alert-fuerahora {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-fuerahora-text);
+  font-size: 0.85rem;
+  font-weight: 800;
+  background-color: #ffedd5;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #fdba74;
+}
+
+.info-empty {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Botones de Cambio Rápido de Estado */
+.room-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.btn-state {
+  border: 2px solid transparent;
+  border-radius: var(--radius-btn);
+  padding: 10px 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-state:active {
+  transform: scale(0.96);
+}
+
+/* Botón LIBRE */
+.btn-state-libre {
+  color: #16a34a;
+  border-color: #86efac;
+  background-color: #f0fdf4;
+}
+.btn-state-libre:hover {
+  background-color: #dcfce7;
+}
+.btn-state-libre.active {
+  background-color: var(--color-libre);
+  color: #ffffff;
+  border-color: var(--color-libre);
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.35);
+}
+
+/* Botón OCUPADA */
+.btn-state-ocupada {
+  color: #dc2626;
+  border-color: #fca5a5;
+  background-color: #fef2f2;
+}
+.btn-state-ocupada:hover {
+  background-color: #fee2e2;
+}
+.btn-state-ocupada.active {
+  background-color: var(--color-ocupada);
+  color: #ffffff;
+  border-color: var(--color-ocupada);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+}
+
+/* Botón SUCIA */
+.btn-state-sucia {
+  color: #854d0e;
+  border-color: #fde047;
+  background-color: #fefce8;
+}
+.btn-state-sucia:hover {
+  background-color: #fef08a;
+}
+.btn-state-sucia.active {
+  background-color: #eab308;
+  color: #713f12;
+  border-color: #ca8a04;
+  box-shadow: 0 2px 6px rgba(234, 179, 8, 0.35);
+}
+
+/* MODAL SELECTOR DE HORA (24H DIGITAL CLOCK STYLE) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-container {
+  background-color: #ffffff;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  color: #64748b;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.modal-close:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Display Digital */
+.digital-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background-color: #0f172a;
+  padding: 16px 28px;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.digital-part {
+  font-size: 2.8rem;
+  font-weight: 800;
+  font-family: monospace;
+  color: #64748b;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 8px;
+  user-select: none;
+}
+
+.digital-part.active {
+  color: #38bdf8;
+  background-color: rgba(56, 189, 248, 0.15);
+}
+
+.digital-colon {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #94a3b8;
+  line-height: 1;
+}
+
+.selector-instructions {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Selector en 2 columnas táctiles */
+.time-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.time-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.col-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  text-align: center;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.buttons-grid {
+  display: grid;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.hours-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.minutes-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.btn-time-chip {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-time-chip:hover {
+  background-color: #e2e8f0;
+}
+
+.btn-time-chip.selected {
+  background-color: #0284c7;
+  color: #ffffff;
+  border-color: #0369a1;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+}
+
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: #f8fafc;
+}
+
+.btn-modal {
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+.btn-cancel {
+  background-color: #e2e8f0;
+  color: #334155;
+}
+.btn-cancel:hover {
+  background-color: #cbd5e1;
+}
+
+.btn-confirm {
+  background-color: var(--color-ocupada);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+.btn-confirm:hover {
+  background-color: #b91c1c;
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  .app-header {
+    padding: 10px 14px;
+  }
+
+  .header-container {
+    gap: 8px;
+  }
+
+  .hotel-title {
+    font-size: 1.15rem;
+  }
+
+  .header-clock {
+    font-size: 1.1rem;
+    padding: 4px 10px;
+  }
+
+  .connection-pill {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+  }
+
+  .main-container {
+    padding: 12px;
+  }
+
+  .rooms-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .room-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .room-number {
+    font-size: 1.2rem;
+  }
+
+  .btn-state {
+    font-size: 0.8rem;
+    padding: 10px 2px;
+    min-height: 44px;
+  }
+
+  .digital-part {
+    font-size: 2.2rem;
+  }
+
+  .btn-time-chip {
+    padding: 12px 0; /* Cómodo para touch */
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .rooms-grid {
+    grid-template-columns: 1fr; /* 1 columna cómoda en pantallas pequeñas */
+  }
+
+  .time-columns {
+    gap: 10px;
+  }
+
+  .hours-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
