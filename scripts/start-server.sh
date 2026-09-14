@@ -41,21 +41,23 @@ if ! ps -p "$SERVER_PID" > /dev/null 2>&1; then
     exit 1
 fi
 
-# 3. Detectar IP local
-LOCAL_IP=$(ip -4 addr show wlan0 2>/dev/null | grep -oP '(?<=inet\s)\d+(\.\d+){3}' | head -n 1)
-if [ -z "$LOCAL_IP" ]; then
-    LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
-fi
+# 3. Detectar IP local genérica mediante Node.js (compatible con WiFi, Ethernet y datos)
+LOCAL_IP=$(node -e "const os=require('os');const i=os.networkInterfaces();for(const n in i){for(const f of i[n]){if(f.family==='IPv4'&&!f.internal){console.log(f.address);process.exit(0);}}}")
 if [ -z "$LOCAL_IP" ]; then
     LOCAL_IP="localhost"
 fi
 
 echo "=================================================="
-echo "🏨 SERVIDOR HOTEL INICIADO CON ÉXITO"
+echo "🏨 Sistema Hotel activo"
 echo "🟢 Estado: ACTIVO (PID: $SERVER_PID)"
-echo "📱 Acceso local: http://localhost:$PORT"
+echo ""
+echo "👉 Acceso recomendado (mDNS):"
+echo "   http://hotel.local:$PORT"
+echo ""
+echo "👉 Acceso alternativo (IP directa):"
+echo "   http://localhost:$PORT"
 if [ "$LOCAL_IP" != "localhost" ]; then
-    echo "📡 Acceso en red LAN: http://$LOCAL_IP:$PORT"
+    echo "   http://$LOCAL_IP:$PORT"
 fi
 echo "=================================================="
 
@@ -63,8 +65,8 @@ echo "=================================================="
 if command -v termux-notification > /dev/null 2>&1; then
     termux-notification \
         --id "hotel_server" \
-        --title "🏨 Sistema Hotel" \
-        --content "🟢 Servidor activo en http://$LOCAL_IP:$PORT" \
+        --title "🏨 Sistema Hotel activo" \
+        --content "hotel.local:$PORT" \
         --ongoing \
         --priority max \
         --alert-once

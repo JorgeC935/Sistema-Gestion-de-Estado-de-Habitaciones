@@ -9,7 +9,7 @@ const roomsGrid = document.getElementById('roomsGrid');
 const headerClock = document.getElementById('headerClock');
 const connectionStatus = document.getElementById('connectionStatus');
 
-// Modal Elements
+// Modal Elements - Time Picker
 const timeModal = document.getElementById('timeModal');
 const modalTitle = document.getElementById('modalTitle');
 const dispHoras = document.getElementById('dispHoras');
@@ -18,7 +18,19 @@ const hoursGrid = document.getElementById('hoursGrid');
 const minutesGrid = document.getElementById('minutesGrid');
 const btnCancelModal = document.getElementById('btnCancelModal');
 const btnCancelAction = document.getElementById('btnCancelAction');
-const btnConfirmOcupada = document.getElementById('btnConfirmOcupada');
+const btnContinueOcupada = document.getElementById('btnContinueOcupada');
+
+// Modal Elements - Confirmación
+const confirmModal = document.getElementById('confirmModal');
+const confirmModalTitle = document.getElementById('confirmModalTitle');
+const confirmModalQuestion = document.getElementById('confirmModalQuestion');
+const confirmModalDetails = document.getElementById('confirmModalDetails');
+const confirmModalTime = document.getElementById('confirmModalTime');
+const btnCancelConfirmX = document.getElementById('btnCancelConfirmX');
+const btnCancelConfirm = document.getElementById('btnCancelConfirm');
+const btnAcceptConfirm = document.getElementById('btnAcceptConfirm');
+
+let pendingConfirmation = null;
 
 // ============================================================================
 // 1. INICIALIZACIÓN DEL SELECTOR DE HORA (24H DIGITAL CLOCK STYLE)
@@ -60,12 +72,71 @@ function initTimePicker() {
   btnCancelModal.addEventListener('click', closeTimeModal);
   btnCancelAction.addEventListener('click', closeTimeModal);
 
-  // Confirmar estado OCUPADA con hora elegida
-  btnConfirmOcupada.addEventListener('click', () => {
+/**
+ * Calcula el timestamp Unix de salida determinando si corresponde a HOY o MAÑANA:
+ * - Si hora seleccionada >= hora actual: HOY.
+ * - Si hora seleccionada < hora actual: MAÑANA.
+ */
+function calculateDeparture(horaSalida, now = new Date()) {
+  const parts = (horaSalida || '').split(':');
+  const h = Number(parts[0]);
+  const m = Number(parts[1]);
+
+  const currentH = now.getHours();
+  const currentM = now.getMinutes();
+
+  const isTomorrow = (h < currentH) || (h === currentH && m < currentM);
+
+  const target = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    h,
+    m,
+    0,
+    0
+  );
+
+  if (isTomorrow) {
+    target.setDate(target.getDate() + 1);
+  }
+
+  const label = (isTomorrow ? 'Mañana ' : 'Hoy ') + horaSalida;
+
+  return {
+    hora_salida: horaSalida,
+    salida_at: target.getTime(),
+    isTomorrow,
+    label
+  };
+}
+
+  // Al presionar Continuar en el selector de hora
+  btnContinueOcupada.addEventListener('click', () => {
     if (currentRoomModalId === null) return;
+    const roomId = currentRoomModalId;
     const horaSalida = `${selectedHour}:${selectedMinute}`;
-    updateRoomState(currentRoomModalId, 'OCUPADA', horaSalida);
+    const dep = calculateDeparture(horaSalida);
+    const currentRoom = roomsData.get(Number(roomId));
+
+    // Si ya está ocupada con esa hora exacta y timestamp similar, no realizar acción
+    if (currentRoom && currentRoom.estado === 'OCUPADA' && currentRoom.hora_salida === horaSalida && currentRoom.salida_at === dep.salida_at) {
+      closeTimeModal();
+      return;
+    }
+
     closeTimeModal();
+
+    // Mostrar confirmación final para OCUPADA indicando Hoy o Mañana
+    showConfirmModal({
+      roomId,
+      targetState: 'OCUPADA',
+      targetHoraSalida: dep.hora_salida,
+      targetSalidaAt: dep.salida_at,
+      question: '¿Marcar como OCUPADA?',
+      showTimeDetails: true,
+      timeValue: dep.label
+    });
   });
 
   // Cerrar modal al hacer clic en el backdrop
@@ -89,6 +160,13 @@ function updateTimePickerDisplay() {
   minutesGrid.querySelectorAll('.btn-time-chip').forEach(btn => {
     btn.classList.toggle('selected', btn.dataset.minute === selectedMinute);
   });
+
+  // Indicar visualmente en el modal si la hora seleccionada corresponde a Hoy o a Mañana
+  const dep = calculateDeparture(`${selectedHour}:${selectedMinute}`);
+  const instEl = timeModal.querySelector('.selector-instructions');
+  if (instEl) {
+    instEl.textContent = `Salida seleccionada: ${dep.label} (formato 24h)`;
+  }
 }
 
 function openTimeModal(roomId) {
@@ -120,20 +198,103 @@ function closeTimeModal() {
 }
 
 // ============================================================================
+// 2. MODAL DE CONFIRMACIÓN DE CAMBIO DE ESTADO
+// ============================================================================
+function initConfirmModal() {
+  btnCancelConfirmX.addEventListener('click', closeConfirmModal);
+  btnCancelConfirm.addEventListener('click', closeConfirmModal);
+
+  // Cerrar al tocar fuera sin aplicar cambios
+  confirmModal.addEventListener('click', (e) => {
+    if (e.target === confirmModal) {
+      closeConfirmModal();
+    }
+  });
+
+  // Solo al presionar CONFIRMAR se aplica el cambio
+  btnAcceptConfirm.addEventListener('click', () => {
+    if (!pendingConfirmation) return;
+    const { roomId, targetState, targetHoraSalida, targetSalidaAt } = pendingConfirmation;
+    closeConfirmModal();
+    updateRoomState(roomId, targetState, targetHoraSalida, targetSalidaAt);
+  });
+}
+
+function showConfirmModal({ roomId, targetState, targetHoraSalida = null, targetSalidaAt = null, question, showTimeDetails = false, timeValue = '' }) {
+  pendingConfirmation = { roomId, targetState, targetHoraSalida, targetSalidaAt };
+
+  confirmModalTitle.textContent = `Habitación ${roomId}`;
+  confirmModalQuestion.textContent = question;
+
+  if (showTimeDetails) {
+    confirmModalTime.textContent = timeValue;
+    confirmModalDetails.style.display = 'flex';
+  } else {
+    confirmModalDetails.style.display = 'none';
+  }
+
+  // Estilo visual del botón de confirmación según el estado
+  btnAcceptConfirm.className = 'btn-modal btn-confirm-action';
+  if (targetState === 'LIBRE') {
+    btnAcceptConfirm.classList.add('confirm-libre');
+  } else if (targetState === 'OCUPADA') {
+    btnAcceptConfirm.classList.add('confirm-ocupada');
+  } else if (targetState === 'SUCIA') {
+    btnAcceptConfirm.classList.add('confirm-sucia');
+  }
+
+  confirmModal.style.display = 'flex';
+}
+
+function closeConfirmModal() {
+  confirmModal.style.display = 'none';
+  pendingConfirmation = null;
+}
+
+function requestStateChange(roomId, targetState) {
+  const currentRoom = roomsData.get(Number(roomId));
+  if (!currentRoom) return;
+
+  // Si el usuario selecciona el mismo estado que ya tiene la habitación, no hacer nada ni mostrar confirmación
+  if (currentRoom.estado === targetState) {
+    return;
+  }
+
+  if (targetState === 'LIBRE' || targetState === 'SUCIA') {
+    showConfirmModal({
+      roomId,
+      targetState,
+      targetHoraSalida: null,
+      targetSalidaAt: null,
+      question: `¿Cambiar el estado a ${targetState}?`,
+      showTimeDetails: false
+    });
+  }
+}
+
+// ============================================================================
 // 2. LÓGICA DE FUERA DE HORA Y RELOJ
 // ============================================================================
-function isFueraDeHora(horaSalida) {
-  if (!horaSalida) return false;
-  const parts = horaSalida.split(':');
-  if (parts.length !== 2) return false;
-  const h = Number(parts[0]);
-  const m = Number(parts[1]);
+function isFueraDeHora(room) {
+  if (!room || room.estado !== 'OCUPADA') return false;
 
-  const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const salidaMinutes = h * 60 + m;
+  // Comparación segura con timestamp Unix ms
+  if (typeof room.salida_at === 'number' && room.salida_at > 0) {
+    return Date.now() > room.salida_at;
+  }
 
-  return currentMinutes > salidaMinutes;
+  // Fallback retrocompatible
+  if (room.hora_salida) {
+    const parts = room.hora_salida.split(':');
+    if (parts.length === 2) {
+      const h = Number(parts[0]);
+      const m = Number(parts[1]);
+      const now = new Date();
+      return (now.getHours() * 60 + now.getMinutes()) > (h * 60 + m);
+    }
+  }
+
+  return false;
 }
 
 function updateClockAndCheckFueraDeHora() {
@@ -157,7 +318,7 @@ function updateClockAndCheckFueraDeHora() {
 // ============================================================================
 function renderRoomCard(room) {
   let card = document.getElementById(`room-card-${room.id}`);
-  const fueraDeHora = room.estado === 'OCUPADA' && isFueraDeHora(room.hora_salida);
+  const fueraDeHora = isFueraDeHora(room);
 
   // Determinar clases visuales
   let cardStateClass = 'state-libre';
@@ -175,17 +336,23 @@ function renderRoomCard(room) {
       infoHtml = `
         <div class="info-content" title="Clic para modificar hora de salida">
           <span class="info-label">Salida:</span>
-          <span class="info-time">${room.hora_salida}</span>
+          <span class="info-time">${room.hora_salida || '--:--'}</span>
           <span class="alert-fuerahora">Excedida</span>
         </div>
       `;
     } else {
       cardStateClass = 'state-ocupada';
       badgeHtml = '<span class="room-badge badge-ocupada">OCUPADA</span>';
+
+      // Identificar discretamente si la salida es mañana
+      const isTomorrow = room.salida_at && (new Date(room.salida_at).getDate() !== new Date().getDate());
+      const tomorrowTag = isTomorrow ? '<span class="badge-tomorrow">Mañana</span>' : '';
+
       infoHtml = `
         <div class="info-content" title="Clic para modificar hora de salida">
           <span class="info-label">Salida:</span>
-          <span class="info-time">${room.hora_salida}</span>
+          <span class="info-time">${room.hora_salida || '--:--'}</span>
+          ${tomorrowTag}
         </div>
       `;
     }
@@ -223,8 +390,8 @@ function renderRoomCard(room) {
     const btnSucia = card.querySelector('[data-action="sucia"]');
     const roomInfo = card.querySelector('.room-info');
 
-    btnLibre.addEventListener('click', () => updateRoomState(room.id, 'LIBRE'));
-    btnSucia.addEventListener('click', () => updateRoomState(room.id, 'SUCIA'));
+    btnLibre.addEventListener('click', () => requestStateChange(room.id, 'LIBRE'));
+    btnSucia.addEventListener('click', () => requestStateChange(room.id, 'SUCIA'));
     btnOcupada.addEventListener('click', () => openTimeModal(room.id));
     roomInfo.addEventListener('click', () => {
       // Si está ocupada o fuera de hora, permite ajustar la hora al tocar la tarjeta
@@ -312,11 +479,12 @@ function initSocket() {
   });
 }
 
-function updateRoomState(id, estado, hora_salida = null) {
+function updateRoomState(id, estado, hora_salida = null, salida_at = null) {
   const payload = {
     id: Number(id),
     estado,
-    hora_salida: estado === 'OCUPADA' ? hora_salida : null
+    hora_salida: estado === 'OCUPADA' ? hora_salida : null,
+    salida_at: estado === 'OCUPADA' ? salida_at : null
   };
 
   // Enviar por WebSocket si está conectado
@@ -359,6 +527,7 @@ function fetchInitialRooms() {
 // Inicialización de la aplicación
 document.addEventListener('DOMContentLoaded', () => {
   initTimePicker();
+  initConfirmModal();
   initSocket();
   fetchInitialRooms();
 

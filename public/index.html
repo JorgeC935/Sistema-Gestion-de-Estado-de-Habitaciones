@@ -71,7 +71,30 @@
 
       <div class="modal-footer">
         <button type="button" class="btn-modal btn-cancel" id="btnCancelAction">Cancelar</button>
-        <button type="button" class="btn-modal btn-confirm" id="btnConfirmOcupada">Confirmar Ocupada</button>
+        <button type="button" class="btn-modal btn-confirm" id="btnContinueOcupada">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación de Cambio de Estado -->
+  <div class="modal-overlay" id="confirmModal" style="display: none;">
+    <div class="modal-container modal-confirm-container" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+      <div class="modal-header">
+        <h2 id="confirmModalTitle">Habitación 1</h2>
+        <button type="button" class="modal-close" id="btnCancelConfirmX" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <div class="modal-body confirm-modal-body">
+        <p class="confirm-question" id="confirmModalQuestion">¿Cambiar el estado a LIBRE?</p>
+        <div class="confirm-details" id="confirmModalDetails" style="display: none;">
+          <span class="confirm-details-label">Hora de salida:</span>
+          <span class="confirm-details-value" id="confirmModalTime">00:00</span>
+        </div>
+      </div>
+
+      <div class="modal-footer confirm-modal-footer">
+        <button type="button" class="btn-modal btn-cancel" id="btnCancelConfirm">CANCELAR</button>
+        <button type="button" class="btn-modal btn-confirm-action" id="btnAcceptConfirm">CONFIRMAR</button>
       </div>
     </div>
   </div>

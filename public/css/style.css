@@ -321,6 +321,19 @@ body {
   border: 1px solid #fdba74;
 }
 
+.badge-tomorrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #0369a1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background-color: #e0f2fe;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid #bae6fd;
+}
+
 .info-empty {
   font-size: 0.85rem;
   color: #94a3b8;
@@ -612,6 +625,93 @@ body {
 }
 .btn-confirm:hover {
   background-color: #b91c1c;
+}
+
+/* Modal de Confirmación Específico */
+.modal-confirm-container {
+  max-width: 440px;
+}
+
+.confirm-modal-body {
+  padding: 26px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.confirm-question {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.confirm-details {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 10px 18px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.confirm-details-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.confirm-details-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-family: monospace;
+  color: #0f172a;
+}
+
+.confirm-modal-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+.btn-confirm-action {
+  background-color: #0284c7;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+}
+.btn-confirm-action:hover {
+  filter: brightness(0.92);
+}
+
+.btn-confirm-action.confirm-libre {
+  background-color: var(--color-libre);
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+}
+.btn-confirm-action.confirm-ocupada {
+  background-color: var(--color-ocupada);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+.btn-confirm-action.confirm-sucia {
+  background-color: var(--color-sucia-border);
+  color: #713f12;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.3);
+}
+
+.confirm-modal-footer .btn-modal {
+  min-height: 50px;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* RESPONSIVE DESIGN */

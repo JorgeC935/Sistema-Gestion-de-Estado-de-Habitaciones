@@ -4,6 +4,7 @@ const os = require('node:os');
 const express = require('express');
 const { Server } = require('socket.io');
 const db = require('./database');
+const HotelMDNSService = require('./mdns');
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +14,14 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 const HOST = '0.0.0.0';
+
+// Instancia de servicio mDNS para publicar hotel.local y servicio HTTP
+const mdnsService = new HotelMDNSService({
+  hostname: 'hotel.local',
+  serviceName: 'Sistema Hotel',
+  serviceType: '_http._tcp',
+  port: PORT
+});
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -30,9 +39,9 @@ app.get('/api/rooms', (req, res) => {
 app.post('/api/rooms/:id', (req, res) => {
   try {
     const { id } = req.params;
-    const { estado, hora_salida } = req.body;
+    const { estado, hora_salida, salida_at } = req.body;
 
-    const updatedRoom = db.updateRoom(id, estado, hora_salida);
+    const updatedRoom = db.updateRoom(id, estado, hora_salida, salida_at);
     
     // Broadcast to all connected clients
     io.emit('room:updated', updatedRoom);
@@ -55,8 +64,8 @@ io.on('connection', (socket) => {
 
   socket.on('room:update', (data) => {
     try {
-      const { id, estado, hora_salida } = data;
-      const updatedRoom = db.updateRoom(id, estado, hora_salida);
+      const { id, estado, hora_salida, salida_at } = data;
+      const updatedRoom = db.updateRoom(id, estado, hora_salida, salida_at);
       // Broadcast to EVERY client including sender
       io.emit('room:updated', updatedRoom);
     } catch (err) {
@@ -81,17 +90,21 @@ function getLocalIPs() {
 }
 
 server.listen(PORT, HOST, () => {
-  console.log('==================================================');
-  console.log(`🏨 SERVIDOR DE HABITACIONES INICIADO EN PUERTO ${PORT}`);
-  console.log(`📡 Escuchando en todas las interfaces (${HOST}:${PORT})`);
-  console.log(`💻 Acceso local: http://localhost:${PORT}`);
-  
+  // Iniciar anuncio mDNS
+  mdnsService.start();
+
   const localIps = getLocalIPs();
+  console.log('==================================================');
+  console.log('🏨 Sistema Hotel activo');
+  console.log(`📡 Escuchando en todas las interfaces (${HOST}:${PORT})`);
+  console.log('');
+  console.log('👉 Acceso recomendado (mDNS):');
+  console.log(`   http://hotel.local:${PORT}`);
+  console.log('');
+  console.log('👉 Acceso alternativo (IP directa):');
+  console.log(`   http://localhost:${PORT}`);
   if (localIps.length > 0) {
-    console.log('📱 Acceso desde celulares/tablets en la red LAN:');
-    localIps.forEach(ip => console.log(`   👉 http://${ip}:${PORT}`));
-  } else {
-    console.log('⚠️  No se detectó IP de red local activa.');
+    localIps.forEach(ip => console.log(`   http://${ip}:${PORT}`));
   }
   console.log('==================================================');
 });
@@ -99,10 +112,14 @@ server.listen(PORT, HOST, () => {
 // Graceful shutdown
 function shutdown(signal) {
   console.log(`\nCerrando servidor (${signal})...`);
-  server.close(() => {
-    db.close();
-    console.log('Servidor y base de datos cerrados limpiamente.');
-    process.exit(0);
+  
+  // Cerrar anuncio mDNS y liberar socket UDP
+  mdnsService.stop(() => {
+    server.close(() => {
+      db.close();
+      console.log('Servidor, mDNS y base de datos cerrados limpiamente.');
+      process.exit(0);
+    });
   });
 
   // Force exit after 3s if pending connections hang
@@ -113,4 +130,5 @@ function shutdown(signal) {
 
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
+
 

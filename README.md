@@ -25,13 +25,29 @@ El servidor arrancará en `http://localhost:3000`.
 
 ## 3. Acceso desde otros dispositivos de la LAN (Celulares / Tablets / PC)
 
-1. En la consola del servidor verás las IPs locales detectadas (ej. `http://192.168.1.50:3000`).
-2. Conecta los celulares, tablets o PCs a la misma red WiFi del hotel.
-3. Abre el navegador web (Chrome, Safari, Firefox) e ingresa la dirección:
-   ```
-   http://<IP-DEL-SERVIDOR>:3000
-   ```
-4. Para mayor comodidad, en el navegador del celular toca el menú de opciones (⋮) y selecciona **"Agregar a la pantalla principal"** para crear un icono directo.
+### Acceso recomendado (mDNS / Zeroconf):
+En cualquier celular, tablet o PC conectado a la misma red WiFi/Ethernet, ingresa directamente en el navegador:
+```
+http://hotel.local:3000
+```
+*(No necesitas conocer la dirección IP del servidor).*
+
+### Acceso alternativo (IP directa):
+Si tu router bloquea tráfico multicast (mDNS) o el dispositivo cliente no tiene soporte Zeroconf, utiliza la dirección IP local que muestra la consola del servidor:
+```
+http://<IP-DEL-SERVIDOR>:3000
+```
+Para mayor comodidad, en el navegador del celular toca el menú de opciones (⋮) y selecciona **"Agregar a la pantalla principal"** para crear un acceso directo.
+
+---
+
+## 3.1 Configuración de Firewall de Windows (Si el servidor es una PC)
+
+Asegúrate de que el Firewall de Windows permita la comunicación:
+- **Node.js**: Permitir en redes privadas cuando Windows muestre la alerta de seguridad.
+- **Puerto TCP 3000**: Entrada permitida para la aplicación web y Socket.IO.
+- **Puerto UDP 5353**: Entrada permitida para el tráfico de descubrimiento mDNS (Multicast DNS).
+*(No desactives el Firewall de Windows; solo permite las reglas anteriores).*
 
 ---
 
