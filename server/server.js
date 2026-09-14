@@ -39,9 +39,9 @@ app.get('/api/rooms', (req, res) => {
 app.post('/api/rooms/:id', (req, res) => {
   try {
     const { id } = req.params;
-    const { estado, hora_salida, salida_at } = req.body;
+    const { estado, hora_salida } = req.body;
 
-    const updatedRoom = db.updateRoom(id, estado, hora_salida, salida_at);
+    const updatedRoom = db.updateRoom(id, estado, hora_salida);
     
     // Broadcast to all connected clients
     io.emit('room:updated', updatedRoom);
@@ -64,8 +64,8 @@ io.on('connection', (socket) => {
 
   socket.on('room:update', (data) => {
     try {
-      const { id, estado, hora_salida, salida_at } = data;
-      const updatedRoom = db.updateRoom(id, estado, hora_salida, salida_at);
+      const { id, estado, hora_salida } = data;
+      const updatedRoom = db.updateRoom(id, estado, hora_salida);
       // Broadcast to EVERY client including sender
       io.emit('room:updated', updatedRoom);
     } catch (err) {

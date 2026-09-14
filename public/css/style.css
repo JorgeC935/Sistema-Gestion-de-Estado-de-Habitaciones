@@ -321,19 +321,6 @@ body {
   border: 1px solid #fdba74;
 }
 
-.badge-tomorrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: #0369a1;
-  font-size: 0.8rem;
-  font-weight: 700;
-  background-color: #e0f2fe;
-  padding: 2px 7px;
-  border-radius: 6px;
-  border: 1px solid #bae6fd;
-}
-
 .info-empty {
   font-size: 0.85rem;
   color: #94a3b8;
